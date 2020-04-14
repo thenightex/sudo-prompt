@@ -74,6 +74,13 @@ function Exec() {
       return end(new Error('options.icns must not be empty if provided.'));
     }
   }
+  if (typeof options.temp !== 'undefined') {
+    if (typeof options.temp !== 'string') {
+      return end(new Error('options.temp must be a string if provided.'));
+    } else if (options.temp.trim().length === 0) {
+      return end(new Error('options.temp must not be empty if provided.'));
+    }
+  }
   if (typeof options.env !== 'undefined') {
     if (typeof options.env !== 'object') {
       return end(new Error('options.env must be an object if provided.'));
@@ -131,7 +138,8 @@ function Linux(instance, end) {
       if (error) return end(error);
       var command = [];
       // Preserve current working directory:
-      command.push('cd "' + EscapeDoubleQuotes(Node.process.cwd()) + '";');
+      var temp = instance.options.temp ? instance.options.temp : Node.process.cwd();
+      command.push('cd "' + EscapeDoubleQuotes(temp) + '";');
       // Export environment variables:
       for (var key in instance.options.env) {
         var value = instance.options.env[key];
@@ -221,7 +229,7 @@ function LinuxBinary(instance, end) {
 }
 
 function Mac(instance, callback) {
-  var temp = Node.os.tmpdir();
+  var temp = instance.options.temp ? instance.options.temp : Node.os.tmpdir();
   if (!temp) return callback(new Error('os.tmpdir() not defined.'));
   var user = Node.process.env.USER; // Applet shell scripts require $USER.
   if (!user) return callback(new Error('env[\'USER\'] not defined.'));
@@ -450,7 +458,7 @@ function ValidName(string) {
 }
 
 function Windows(instance, callback) {
-  var temp = Node.os.tmpdir();
+  var temp = instance.options.temp ? instance.options.temp : Node.os.tmpdir();
   if (!temp) return callback(new Error('os.tmpdir() not defined.'));
   UUID(instance,
     function(error, uuid) {

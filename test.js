@@ -1,5 +1,7 @@
 var assert = require('assert');
 var fs = require('fs');
+var os = require('os');
+var path = require('path');
 var sudo = require('./');
 var exec = require('child_process').exec;
 
@@ -20,10 +22,12 @@ function icns() {
 
 kill(
   function() {
+    var tempPath = process.platform === 'win32' ? process.cwd().split(path.sep)[0] : os.tmpdir();
     var options = {
       env: { 'SUDO_PROMPT_TEST_ENV': 'hello world' },
       icns: icns(),
-      name: 'Electron'
+      name: 'Electron',
+      temp: tempPath
     };
     if (process.platform === 'win32') {
       var command = 'echo %SUDO_PROMPT_TEST_ENV%';
